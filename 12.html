@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Weather Dashboard</title>
+
+<style>
+
+body{
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg,#74ebd5,#ACB6E5);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+}
+
+.container{
+    text-align:center;
+}
+
+.cards{
+    display:flex;
+    gap:20px;
+    margin-top:20px;
+}
+
+.card{
+    background:white;
+    padding:20px;
+    border-radius:12px;
+    width:180px;
+    box-shadow:0 4px 10px rgba(0,0,0,0.2);
+    transition:0.3s;
+}
+
+.card:hover{
+    transform:scale(1.05);
+}
+
+.temp{
+    font-size:28px;
+    font-weight:bold;
+}
+
+.emoji{
+    font-size:40px;
+}
+
+.spinner{
+    border:6px solid #eee;
+    border-top:6px solid #333;
+    border-radius:50%;
+    width:40px;
+    height:40px;
+    animation:spin 1s linear infinite;
+    margin:20px auto;
+}
+
+@keyframes spin{
+    100%{transform:rotate(360deg);}
+}
+
+.error{
+    color:red;
+    font-weight:bold;
+}
+
+</style>
+</head>
+
+
+<body>
+
+<div class="container">
+
+<h2>Weather Dashboard</h2>
+
+<div id="loading" class="spinner"></div>
+
+<div id="cards" class="cards"></div>
+
+<div id="error" class="error"></div>
+
+</div>
+
+
+<script>
+
+const cities = [
+    {name:"Delhi", lat:28.61, lon:77.23},
+    {name:"Mumbai", lat:19.07, lon:72.87},
+    {name:"Bangalore", lat:12.97, lon:77.59}
+];
+
+
+function weatherEmoji(code){
+
+if(code === 0) return "☀️";
+if(code <= 3) return "⛅";
+if(code <= 48) return "☁️";
+if(code <= 67) return "🌧️";
+if(code <= 77) return "❄️";
+if(code <= 99) return "⛈️";
+
+return "🌡️";
+}
+
+
+
+function fetchWeather(city){
+
+const url = `https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lon}&current_weather=true`;
+
+return fetch(url)
+.then(res => res.json())
+.then(data => {
+
+const temp = data.current_weather.temperature;
+const code = data.current_weather.weathercode;
+
+return {
+city: city.name,
+temp: temp,
+code: code
+};
+
+});
+
+}
+
+
+
+function loadWeather(){
+
+const loading = document.getElementById("loading");
+const cards = document.getElementById("cards");
+const error = document.getElementById("error");
+
+Promise.all(cities.map(fetchWeather))
+
+.then(results => {
+
+loading.style.display="none";
+
+results.forEach(w => {
+
+const card = document.createElement("div");
+card.className="card";
+
+card.innerHTML = `
+<h3>${w.city}</h3>
+<div class="emoji">${weatherEmoji(w.code)}</div>
+<div class="temp">${w.temp}°C</div>
+<p>Weather Code: ${w.code}</p>
+`;
+
+cards.appendChild(card);
+
+});
+
+})
+
+.catch(err => {
+
+loading.style.display="none";
+error.textContent="Failed to fetch weather data.";
+
+});
+
+}
+
+loadWeather();
+
+</script>
+
+</body>
+</html>
