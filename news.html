@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>News App</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:linear-gradient(135deg,#667eea,#764ba2);
+margin:0;
+padding:30px;
+color:white;
+text-align:center;
+}
+
+h1{
+margin-bottom:20px;
+}
+
+select{
+padding:10px;
+border-radius:6px;
+border:none;
+font-size:16px;
+margin-bottom:20px;
+}
+
+#news{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+gap:20px;
+}
+
+.card{
+background:white;
+color:#333;
+padding:15px;
+border-radius:10px;
+box-shadow:0 10px 20px rgba(0,0,0,0.2);
+text-align:left;
+transition:0.3s;
+}
+
+.card:hover{
+transform:translateY(-5px);
+}
+
+img{
+width:100%;
+border-radius:6px;
+}
+
+.loader{
+font-size:18px;
+margin:20px;
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>📰 News App</h1>
+
+<select id="topic">
+<option value="technology">Technology</option>
+<option value="sports">Sports</option>
+<option value="business">Business</option>
+<option value="health">Health</option>
+</select>
+
+<div class="loader" id="loader">Loading news...</div>
+
+<div id="news"></div>
+
+<script>
+
+const apiKey="YOUR_API_KEY"
+
+const topicSelect=document.getElementById("topic")
+const newsDiv=document.getElementById("news")
+const loader=document.getElementById("loader")
+
+// load default news on page load
+window.addEventListener("load",()=>{
+loadNews(topicSelect.value)
+})
+
+topicSelect.addEventListener("change",()=>{
+loadNews(topicSelect.value)
+})
+
+async function loadNews(topic){
+
+loader.style.display="block"
+newsDiv.innerHTML=""
+
+try{
+
+const res=await fetch(
+`https://newsapi.org/v2/top-headlines?country=us&category=${topic}&apiKey=${apiKey}`
+)
+
+const data=await res.json()
+
+loader.style.display="none"
+
+data.articles.forEach(article=>{
+
+const card=`
+<div class="card">
+<img src="${article.urlToImage || ''}">
+<h3>${article.title}</h3>
+<p>${article.description || ''}</p>
+<a href="${article.url}" target="_blank">Read more</a>
+</div>
+`
+
+newsDiv.innerHTML+=card
+
+})
+
+}
+
+catch(error){
+loader.innerText="Error loading news"
+}
+
+}
+
+</script>
+
+</body>
+</html>
